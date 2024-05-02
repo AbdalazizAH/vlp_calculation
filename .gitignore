@@ -1,3 +1,7 @@
 __pycache__/
 *.cpython-311.pyc
 *.cpython-312.pyc
+__pycache__/
+git rm --cached */__pycache__/*
+*,pyc
+__pycache__
