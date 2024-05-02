@@ -1,5 +1,5 @@
-import numpy as np
 import BeggsandBrill as BB
+
 
 class Vlp:
     """
@@ -8,29 +8,29 @@ class Vlp:
 
     def __init__(
         self,
-        oil_rate: float=None,
-        GOR:      float=None,
-        gas_grav: float=None,
-        oil_grav: float=None,
-        wtr_grav: float=None,
-        dimameters: float=None,
-        angle: float=None,
-        thp: float=None,
-        tht:float=None,
-        twf:float=None,
-        depth:float=None,
-        sample_size:float=None,
-        pressure:float=None,
-        thickness:float=None,
-        k:float=None,
-        visc:float=None,
-        GasGrav:float=None,
-        themp:float=None,
-        rw:float=None,
-        re:float=None,
-        s:float=None,
-        oilfvf:float=None,
-        water_rate:float=None,
+        oil_rate=None,
+        GOR=None,
+        gas_grav=None,
+        oil_grav=None,
+        wtr_grav=None,
+        dimameters=None,
+        angle=None,
+        thp=None,
+        tht=None,
+        twf=None,
+        depth=None,
+        sample_size=None,
+        pressure=None,
+        thickness=None,
+        k=None,
+        visc=None,
+        GasGrav=None,
+        themp=None,
+        rw=None,
+        re=None,
+        s=None,
+        oilfvf=None,
+        water_rate=None,
     ):
         """
         Initializes the Vlp class with the given parameters.
@@ -63,7 +63,14 @@ class Vlp:
         self.oilfvf = oilfvf
 
         # Define range of flow rates to evaluate (ASSYM #)
-        self.rates = np.linspace(0.1, 3992, 50)
+        self.rates = self.linspace(0.1, 3992, 50)
+
+    def linspace(self, start, stop, num):
+        """
+        Emulates numpy's linspace function.
+        """
+        step = (stop - start) / (num - 1)
+        return [start + i * step for i in range(num)]
 
     def t_grad(self):
         """
@@ -75,21 +82,21 @@ class Vlp:
         else:
             return abs(self.tht - self.twf) / self.depth
 
-    def depths(self) -> list:
+    def depths(self):
         """
         Creates a list of depths at which to calculate pressure.
         """
 
-        return np.linspace(0, self.depth, 51)
+        return self.linspace(0, self.depth, 51)
 
-    def temps_gradient(self) -> list:
+    def temps_gradient(self):
         """
         Calculates the temperature at each depth based on the gradient.
         """
+        depths = self.depths()
+        return [self.tht + self.t_grad() * depth for depth in depths]
 
-        return self.tht + self.t_grad() * self.depths()
-
-    def pressure_traverse(self, q):
+    def pressure_traverse(self, QASume):
         """
         Calculates the pressure profile for a given flow rate.
         """
@@ -97,12 +104,15 @@ class Vlp:
         p = [self.thp]  # Initialize with tubing head pressure
         dpdz = []
 
-        for i in range(1, len(self.depths())):
-            dz = self.depths()[i] - self.depths()[i - 1]
+        depths = self.depths()
+        temps_gradient = self.temps_gradient()
+
+        for i in range(1, len(depths)):
+            dz = depths[i] - depths[i - 1]
             dpdz_step = BB.Pgrad(
                 p[-1],
-                self.temps_gradient()[i],
-                q,
+                temps_gradient[i],
+                QASume,
                 self.water_rate,
                 self.GOR,
                 self.GasGrav,
@@ -121,15 +131,14 @@ class Vlp:
         """
         Calculates the VLP curve (bottomhole pressure vs. flow rate).
         """
-
         bhps = []
-        ratess =[]
-        for q in self.rates:
-            p, _ = self.pressure_traverse(q)
+        ratess = []
+        for QASume in self.rates:
+            p, _ = self.pressure_traverse(QASume)
             bhp = p[-1]
-            print(bhp)
+            # print(bhp)
             bhps.append(bhp)
-            ratess.append(q)
-            vlp = [ratess,bhps ]
+            ratess.append(QASume)
+            vlp = [ratess, bhps]
         # return bhps
         return vlp

@@ -1,3 +1,5 @@
+import pandas as pd
+from matplotlib import pyplot as plt
 import vlp as v
 
 
@@ -26,9 +28,14 @@ test = v.Vlp(
     s=5,
     oilfvf=1.2,
 )
-vlps = test.vlp()
+vlps =test.vlp()
 
-import matplotlib.pyplot as plt
 
-plt.plot(vlps[0], vlps[1])
+vlp_data = pd.DataFrame({"Flow Rate": vlps[0], "Bottomhole Pressure": vlps[1]})
+print (vlp_data)
+# Plotting
+plt.plot(vlp_data["Flow Rate"], vlp_data["Bottomhole Pressure"])
+plt.xlabel("Flow Rate")
+plt.ylabel("Bottomhole Pressure")
+plt.title("VLP Curve")
 plt.show()
